@@ -10,7 +10,7 @@ import threading
 import http.client
 import urllib
 from datetime import datetime
-import collections
+from collections.abc import MutableMapping
 import pkg_resources
 
 from jsonschema.validators import Draft4Validator
@@ -29,20 +29,20 @@ def flatten(d, parent_key='', sep='__'):
     items = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, collections.MutableMapping):
+        if isinstance(v, MutableMapping):
             items.extend(flatten(v, new_key, sep=sep).items())
         else:
             items.append((new_key, str(v) if type(v) is list else v))
     return dict(items)
-        
-def persist_messages(delimiter, quotechar, messages, destination_path):
+
+def persist_messages(delimiter, quotechar, messages, destination_path, timestamp_override):
     state = None
     schemas = {}
     key_properties = {}
     headers = {}
     validators = {}
 
-    now = datetime.now().strftime('%Y%m%dT%H%M%S')
+    now = timestamp_override or datetime.now().strftime('%Y%m%dT%H%M%S')
 
     for message in messages:
         try:
@@ -141,7 +141,9 @@ def main():
     state = persist_messages(config.get('delimiter', ','),
                              config.get('quotechar', '"'),
                              input_messages,
-                             config.get('destination_path', ''))
+                             config.get('destination_path', ''),
+                             config.get('timestamp_override', None)
+                             )
 
     emit_state(state)
     logger.debug("Exiting normally")

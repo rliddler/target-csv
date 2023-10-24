@@ -1,5 +1,6 @@
 {
     "delimiter": "\t",
     "quotechar": "'",
-    "destination_path": ""
+    "destination_path": "testdata/",
+    "timestamp_override": "2023"
 }
